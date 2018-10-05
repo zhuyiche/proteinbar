@@ -1,8 +1,8 @@
 import keras
 
-from deepyeast.dataset import load_data
-from deepyeast.utils import preprocess_input
-from deepyeast.models import DeepYeast
+from dataset import load_data
+from utils import preprocess_input
+from models import DeepYeast
 import os
 import argparse
 from keras.callbacks import Callback, EarlyStopping, ModelCheckpoint, ReduceLROnPlateau, TensorBoard
@@ -42,7 +42,6 @@ x_val = preprocess_input(x_val)
 # set up model
 if model_type == 'deepyeast':
     model = DeepYeast()
-
 if opt == 'adam':
     optimizer = keras.optimizers.Adam(lr=lr)
 elif opt == 'sgd':
