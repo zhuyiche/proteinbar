@@ -6,9 +6,10 @@ from models import DeepYeast
 import os
 import argparse
 from keras.callbacks import Callback, EarlyStopping, ModelCheckpoint, ReduceLROnPlateau, TensorBoard
+from guassian_loss import build_gmd_log_likelihood
 parser = argparse.ArgumentParser()
 parser.add_argument("--batchsize", type=int, default=64)
-parser.add_argument("--epoch", type=int, default=400)
+parser.add_argument("--epoch", type=int, default=300)
 parser.add_argument("--lr", type=float, default=0.01)
 parser.add_argument("--opt", type=str, default='adam')
 parser.add_argument("--model", type=str, default='deepyeast')
@@ -43,22 +44,22 @@ x_val = preprocess_input(x_val)
 if model_type == 'deepyeast':
     model = DeepYeast()
 if opt == 'adam':
-    optimizer = keras.optimizers.Adam(lr=lr)
+    optimizer = keras.optimizers.Adam()
 elif opt == 'sgd':
     optimizer = keras.optimizers.SGD(lr=lr, momentum=0.9, nesterov=True)
 
-model.compile(loss=keras.losses.categorical_crossentropy,
+model.compile(loss=build_gmd_log_likelihood(),
               optimizer=optimizer,
               metrics=['accuracy'])
 
-filepath= os.path.join(CHECKPOINT_DIR, model_type + '_' + opt + "_weights-{epoch:02d}-{val_acc:.3f}.h5")
+filepath= os.path.join(CHECKPOINT_DIR, model_type + '_' + opt +'_gloss'+ "_weights-{epoch:02d}-{val_acc:.3f}.h5")
 earlystop_callback = EarlyStopping(monitor='val_loss',
                                        patience=5,
                                        min_delta=0.01)
-tensorboard_callback = TensorBoard(os.path.join(TENSORBOARD_DIR, model_type + '_' + opt +'_tb_logs'))
+tensorboard_callback = TensorBoard(os.path.join(TENSORBOARD_DIR, model_type + '_' + opt +'_gloss'+'_tb_logs'))
 checkpoint = ModelCheckpoint(filepath, monitor='val_acc', verbose=1, save_best_only=True, mode='max')
 reduce_lr = ReduceLROnPlateau(monitor='val_acc', factor=0.1, patience=5, cooldown=0, min_lr=1e-5)
-callbacks_list = [checkpoint, reduce_lr, earlystop_callback]
+callbacks_list = [checkpoint, reduce_lr, tensorboard_callback]
 
 
 # training loop
@@ -68,8 +69,9 @@ model.fit(x_train, y_train,
           validation_data=(x_val, y_val),
           callbacks=callbacks_list)
 
+
 model_json = model.to_json()
-with open(os.path.join(JSON_DIR, model_type + '_' + opt +'.json'), 'w') as json_file:
+with open(os.path.join(JSON_DIR, model_type + '_' + opt +'_gloss'+'.json'), 'w') as json_file:
     json_file.write(model_json)
-model.save_weights(os.path.join(WEIGHTS_DIR, model_type + '_' + opt + '.h5'))
+model.save_weights(os.path.join(WEIGHTS_DIR, model_type + '_' + opt +'_gloss'+ '.h5'))
 print('deepyeast model has been saved')
