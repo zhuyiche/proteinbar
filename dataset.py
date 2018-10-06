@@ -102,7 +102,7 @@ def _load_data(category, split):
     print("Loading images...")    
     num_imgs = len(filepaths)
     x = np.empty((num_imgs, 64, 64, 2), dtype='uint8')
-    for i in xrange(num_imgs):
+    for i in range(num_imgs):
         img = Image.open(filepaths[i])
         img = np.asarray(img, dtype='uint8')
         x[i] = img[:, :, :2]
