@@ -3,7 +3,7 @@ from keras import backend as K
 HALF_LOG_TWOPI = 0.91893853320467267  # (1/2)*log(2*pi)
 
 
-def build_gmd_log_likelihood(c=12, m=24):
+def build_gmd_log_likelihood(c=12, m=12):
     """Build log-likelihood loss for Gaussian Mixture Densities.
     Args:
         c (int): Number of output dimensions.
