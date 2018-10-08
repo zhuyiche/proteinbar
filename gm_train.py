@@ -7,7 +7,7 @@ import os
 import argparse
 from keras.callbacks import Callback, EarlyStopping, ModelCheckpoint, ReduceLROnPlateau, TensorBoard
 from guassian_loss import build_gmd_log_likelihood
-from lgm_loss import lgm_loss
+from lgm_loss import logits_lgm_loss, likelihood_lgm_loss
 
 parser = argparse.ArgumentParser()
 parser.add_argument("--batchsize", type=int, default=64)
@@ -50,7 +50,14 @@ if opt == 'adam':
 elif opt == 'sgd':
     optimizer = keras.optimizers.SGD(lr=lr, momentum=0.9, nesterov=True)
 
-model.compile(loss=keras.losses.categorical_crossentropy,
+
+losses = {
+	"cross_entropy": logits_lgm_loss,
+    "likelihood": likelihood_lgm_loss
+}
+lossWeights = {"cross_entropy": 1.0, "likelihood": 1.0}
+
+model.compile(loss=losses, loss_weights=lossWeights,
               optimizer=optimizer,
               metrics=['accuracy'])
 
