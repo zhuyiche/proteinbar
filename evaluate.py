@@ -3,8 +3,9 @@ import argparse
 import numpy as np
 from sklearn import metrics
 
-from deepyeast.dataset import load_data
-from deepyeast.utils import preprocess_input
+from dataset import load_data
+from utils import preprocess_input
+
 
 def parse_args():
     available_models = ['deepyeast', 'resnet', 'mobilenet', 'densenet']
@@ -28,16 +29,16 @@ def evaluate(split):
 
 def load_model(model_name):
     if model_name == 'deepyeast':
-        from deepyeast.models import DeepYeast
+        from models import DeepYeast
         model = DeepYeast()
     elif model_name == 'resnet':
-        from deepyeast.models import ResNet50
+        from models import ResNet50
         model = ResNet50()
     elif model_name == 'mobilenet':
-        from deepyeast.models import MobileNet
+        from models import MobileNet
         model = MobileNet()
     elif model_name == 'densenet':
-        from deepyeast.models import DenseNet40_BC
+        from models import DenseNet40_BC
         model = DenseNet40_BC()
     return model
 

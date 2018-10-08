@@ -56,7 +56,7 @@ def DeepYeast():
     x = Activation('relu', name='relu5')(x)
     x = Dropout(0.5)(x)
     x = Dense(12, name='ip3')(x)
-    x = Activation('softmax', name='predictions')(x)
+    x = Activation('softmax')(x)
 
     # Create model
     model = Model(img_input, x, name='deepyeast-original')

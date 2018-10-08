@@ -7,6 +7,8 @@ import os
 import argparse
 from keras.callbacks import Callback, EarlyStopping, ModelCheckpoint, ReduceLROnPlateau, TensorBoard
 from guassian_loss import build_gmd_log_likelihood
+from lgm_loss import lgm_loss
+
 parser = argparse.ArgumentParser()
 parser.add_argument("--batchsize", type=int, default=64)
 parser.add_argument("--epoch", type=int, default=300)
@@ -48,7 +50,7 @@ if opt == 'adam':
 elif opt == 'sgd':
     optimizer = keras.optimizers.SGD(lr=lr, momentum=0.9, nesterov=True)
 
-model.compile(loss=build_gmd_log_likelihood(),
+model.compile(loss=lgm_loss,
               optimizer=optimizer,
               metrics=['accuracy'])
 

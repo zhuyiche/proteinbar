@@ -4,9 +4,10 @@ import keras
 from keras import backend as K
 from keras.preprocessing.image import ImageDataGenerator
 
-from deepyeast.dataset import load_data
-from deepyeast.utils import preprocess_input
-from deepyeast.models import DeepYeast
+from dataset import load_data
+from utils import preprocess_input
+from models import DeepYeast
+
 
 class LearningRateFinder:
     def __init__(self, model):
@@ -19,7 +20,7 @@ class LearningRateFinder:
         K.set_value(self.model.optimizer.lr, start_lr)
 
         iters_per_epoch = x_train.shape[0] // batch_size
-        for i in xrange(iters):
+        for i in range(iters):
             # get batch
             j = i % (iters_per_epoch - 1)
             ix_start = j * batch_size
@@ -50,6 +51,7 @@ class LearningRateFinder:
         plt.xlabel("learning rate (log scale)")
         plt.ylabel("loss")
 
+
 if __name__ == "__main__":
     # set up data
     x_train, y_train = load_data("train")
@@ -67,5 +69,5 @@ if __name__ == "__main__":
 
     # search for lr
     lr_finder = LearningRateFinder(model)
-    lr_finder.find()
+    lr_finder.find(x_train, y_train)
     lr_finder.plot()
