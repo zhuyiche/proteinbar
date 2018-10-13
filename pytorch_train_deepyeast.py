@@ -204,7 +204,7 @@ def main():
         optimizer = torch.optim.Adam(model.parameters())
         mean_optimizer = torch.optim.Adam(criterion.parameters())
     else:
-        optimizer = torch.optim.SGD(model.parameters(), lr=0.02, momentum=0.9,nesterov=True, weight_decay=0.0001)
+        optimizer = torch.optim.SGD(model.parameters(), lr=0.01, momentum=0.9,nesterov=True, weight_decay=0.0001)
         mean_optimizer = torch.optim.SGD(criterion.parameters(), lr=0.01, momentum=0.9, nesterov=True, weight_decay=0.0001)
 
     train_dataset = ProteinDataset('train')
