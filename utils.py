@@ -21,6 +21,16 @@ def preprocess_input(x):
     x *= 2.
     return x
 
+def torch_preprocess_input(x):
+    x = x.astype(np.float32)
+    x /= 255.
+    x -= 0.5
+    x *= 2.
+    images = np.array(x)
+    x = np.transpose(images, (0, 3, 1, 2))
+
+    return x
+
 def decode_predictions(preds):
     results = []
     for pred in preds:

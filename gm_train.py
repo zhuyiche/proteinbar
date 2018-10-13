@@ -31,6 +31,13 @@ CHECKPOINT_DIR = os.path.join(ROOT_DIR, 'checkpoint')
 WEIGHTS_DIR = os.path.join(ROOT_DIR, 'model_weights')
 JSON_DIR = os.path.join(ROOT_DIR, 'json_files')
 
+
+model = DeepYeast()
+
+optimizer = keras.optimizers.SGD(lr=0.01, momentum=0.9, nesterov=True)
+model.compile(loss=logits_lgm_loss,
+              optimizer=optimizer,metrics=['accuracy'])
+
 # set up data
 x_val, y_val = load_data("val")
 x_train, y_train = load_data("train")
@@ -43,23 +50,8 @@ x_train = preprocess_input(x_train)
 x_val = preprocess_input(x_val)
 
 # set up model
-if model_type == 'deepyeast':
-    model = DeepYeast()
-if opt == 'adam':
-    optimizer = keras.optimizers.Adam()
-elif opt == 'sgd':
-    optimizer = keras.optimizers.SGD(lr=lr, momentum=0.9, nesterov=True)
 
 
-losses = {
-	"cross_entropy": logits_lgm_loss,
-    "likelihood": likelihood_lgm_loss
-}
-lossWeights = {"cross_entropy": 1.0, "likelihood": 1.0}
-
-model.compile(loss=losses, loss_weights=lossWeights,
-              optimizer=optimizer,
-              metrics=['accuracy'])
 
 filepath= os.path.join(CHECKPOINT_DIR, model_type + '_' + opt +'_gloss'+ "_weights-{epoch:02d}-{val_acc:.3f}.h5")
 earlystop_callback = EarlyStopping(monitor='val_loss',

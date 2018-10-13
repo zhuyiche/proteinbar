@@ -15,8 +15,8 @@ def logits_lgm_loss(num_classes=12, alpha=0.1, lambda_=0.01):
       Set labels=None\n
       return logits\n
       '''
-      N = y_true.get_shape().as_list()[0]
-      feat_len = y_true.get_shape()[1]
+      N = y_true.shape().as_list()[0]
+      feat_len = y_true.shape()[1]
       means = tf.get_variable('rbf_centers', [num_classes, feat_len], dtype=tf.float32,
                                     initializer=tf.contrib.layers.xavier_initializer())
 
@@ -32,7 +32,11 @@ def logits_lgm_loss(num_classes=12, alpha=0.1, lambda_=0.01):
       logits_with_margin_sparse = tf.nn.sparse_softmax_cross_entropy_with_logits(logits=logits_with_margin)
       logits_with_margin_mean = tf.reduce_mean(logits_with_margin_sparse)
       #print('LGM loss built with alpha=%f, lambda=%f\n' %(alpha, lambda_))
-      return logits_with_margin_mean
+
+      means_batch = tf.gather(means, y_pred)
+      likelihood_reg_loss = lambda_ * tf.nn.l2_loss(y_true - means_batch, name='center_regularization') * (1. / N)
+
+      return logits_with_margin_mean + likelihood_reg_loss
     return lgm_logits
 
 
@@ -47,8 +51,8 @@ def likelihood_lgm_loss(num_classes=12, alpha=0.1, lambda_=0.01):
       Set labels=None\n
       return logits\n
       '''
-      N = y_true.get_shape().as_list()[0]
-      feat_len = y_true.get_shape()[1]
+      N = y_true.shape().as_list()[0]
+      feat_len = y_true.shape()[1]
       means = tf.get_variable('rbf_centers', [num_classes, feat_len], dtype=tf.float32,
                                     initializer=tf.contrib.layers.xavier_initializer())
       # likelihood regularization

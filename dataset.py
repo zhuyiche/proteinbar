@@ -106,7 +106,7 @@ def _load_data(category, split):
         img = Image.open(filepaths[i])
         img = np.asarray(img, dtype='uint8')
         x[i] = img[:, :, :2]
-        
+    print("x.shape: {}, y.shape: {}".format(x.shape, y.shape))
     return x, y
 
 def load_data(split):
