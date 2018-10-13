@@ -10,8 +10,22 @@ from pytorch_deepyeast import Net
 import torch.backends.cudnn as cudnn
 from averagemeter import AverageMeter
 from pytorch_lgm_loss import LGMLoss
-BATCH_SIZE = 64
-epoch = 300
+import argparse
+parser = argparse.ArgumentParser()
+parser.add_argument("--batchsize", type=int, default=512)
+parser.add_argument("--epoch", type=int, default=400)
+parser.add_argument("--lr", type=float, default=0.01)
+parser.add_argument("--opt", type=str, default='no')
+parser.add_argument("--model", type=str, default='deepyeast')
+parser.add_argument("--mean", type=str, default='false')
+
+args = parser.parse_args()
+batch_size = args.batchsize
+epoch = args.epoch
+opt = args.opt
+lr = args.lr
+model_type = args.model
+
 
 def torch_preprocess_input(x):
     x = x.astype(np.float32)
@@ -50,6 +64,7 @@ def accuracy(output, target):
     percent_acc = 100 * correct/total
     return percent_acc
 
+
 def tf_softmax_cross_entropy_with_logits_pytorch(logtis, y_true):
     y_hat_softmax = torch.argmax(torch.nn.functional.softmax(logtis), 1)
     print(y_hat_softmax.shape,  y_true.shape)
@@ -60,6 +75,7 @@ def tf_softmax_cross_entropy_with_logits_pytorch(logtis, y_true):
 def train_epoch(data_loader, model, criterion, optimizer, mean_optimizer=None, _WEIGHT_DECAY = 5e-4, print_freq=10):
     losses = AverageMeter()
     percent_acc = AverageMeter()
+    means_param = AverageMeter()
     model.train()
     time_now = time.time()
 
@@ -98,10 +114,16 @@ def train_epoch(data_loader, model, criterion, optimizer, mean_optimizer=None, _
         percent_acc.update(acc, data.size(0))
 
         # compute gradient and do SGD step
+        #means_param.update(means.item(), data.size(0))
+
+        if args.mean == 'true':
+            mean_optimizer.zero_grad()
+
         optimizer.zero_grad()
         loss.backward()
         optimizer.step()
-
+        if args.mean == 'true':
+            mean_optimizer.step()
         time_end = time.time() - time_now
         if batch_idx % print_freq == 0:
             print('Training Round: {}, Time: {}'.format(batch_idx, np.round(time_end, 2)))
@@ -166,8 +188,7 @@ def validate(val_loader, model, criterion, _WEIGHT_DECAY = 5e-4, print_freq=1000
 
 def main():
     cudnn.benchmark = True
-    batch_size = 512
-    EPOCHS = 300
+    batch_size = args.batchsize
 
     workers = 4
     global best_val_acc, best_test_acc
@@ -177,11 +198,14 @@ def main():
     #if Config.gpu is not None:
     model = model.cuda()
 
-    l2_criterion = nn.MSELoss().cuda()
 
     criterion = LGMLoss(12, 12).cuda()
-    optimizer = torch.optim.SGD(model.parameters(), lr=0.01, momentum=0.9,nesterov=True, weight_decay=0.0001)
-    #optimizer = Adam(model.parameters())
+    if args.opt == 'adam':
+        optimizer = torch.optim.Adam(model.parameters())
+        mean_optimizer = torch.optim.Adam(criterion.parameters())
+    else:
+        optimizer = torch.optim.SGD(model.parameters(), lr=0.02, momentum=0.9,nesterov=True, weight_decay=0.0001)
+        mean_optimizer = torch.optim.SGD(criterion.parameters(), lr=0.01, momentum=0.9, nesterov=True, weight_decay=0.0001)
 
     train_dataset = ProteinDataset('train')
     val_dataset = ProteinDataset('val')
@@ -194,8 +218,8 @@ def main():
                             num_workers=workers)
 
     best_val_acc = 0
-    for epoch in range(EPOCHS):
-        train_losses, train_acc = train_epoch(train_loader, model, criterion, optimizer)
+    for epoch in range(args.epoch):
+        train_losses, train_acc = train_epoch(train_loader, model, criterion, optimizer, mean_optimizer)
         print('Epoch: {} train loss: {}, train acc: {}'.format(epoch, train_losses.avg, train_acc.avg))
 
         val_losses, val_acc = validate(val_loader, model, criterion)
