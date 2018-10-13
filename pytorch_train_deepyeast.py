@@ -72,7 +72,7 @@ def tf_softmax_cross_entropy_with_logits_pytorch(logtis, y_true):
     #total_loss = total_loss.cuda().long()
     return total_loss
 
-def train_epoch(data_loader, model, criterion, optimizer, mean_optimizer=None, _WEIGHT_DECAY = 5e-4, print_freq=10):
+def train_epoch(data_loader, model, criterion, optimizer, mean_optimizer=None, _WEIGHT_DECAY = 5e-4, print_freq=1000):
     losses = AverageMeter()
     percent_acc = AverageMeter()
     means_param = AverageMeter()
