@@ -69,7 +69,7 @@ class Net(nn.Module):
 
         self.fc3 = nn.Linear(512, 12)
         self.dropout2 = nn.Dropout()
-        self.out = nn.Softmax(dim=1)
+        self.out = nn.LogSoftmax(dim=1)
 
     def forward(self, x):
         x = self.block1conv1(x)
