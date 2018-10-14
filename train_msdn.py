@@ -154,7 +154,7 @@ def main():
 
     #criterion = LGMLoss(12, 12).cuda()
 
-    criterion = torch.nn.CrossEntropyLoss()
+    criterion = torch.nn.CrossEntropyLoss().cuda()
     optimizer = torch.optim.SGD(model.parameters(),
                                 lr=args.lr, momentum=args.mom,nesterov=True, weight_decay=args.weight_decay)
 
