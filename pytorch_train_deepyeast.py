@@ -14,17 +14,19 @@ import argparse
 parser = argparse.ArgumentParser()
 parser.add_argument("--batchsize", type=int, default=512)
 parser.add_argument("--epoch", type=int, default=400)
-parser.add_argument("--lr", type=float, default=0.01)
 parser.add_argument("--opt", type=str, default='no')
 parser.add_argument("--model", type=str, default='deepyeast')
 parser.add_argument("--mean", type=str, default='false')
+parser.add_argument("--weight_decay", type=float, default=0.0001)
+parser.add_argument("--lr", type=float, default=0.01)
+parser.add_argument("--mom", type=float, default=0.9)
+parser.add_argument("--mean_weight_decay", type=float, default=0.0001)
+parser.add_argument("--mean_lr", type=float, default=0.01)
+parser.add_argument("--mean_mom", type=float, default=0.9)
+
 
 args = parser.parse_args()
-batch_size = args.batchsize
-epoch = args.epoch
-opt = args.opt
-lr = args.lr
-model_type = args.model
+
 
 
 def torch_preprocess_input(x):
@@ -204,8 +206,10 @@ def main():
         optimizer = torch.optim.Adam(model.parameters())
         mean_optimizer = torch.optim.Adam(criterion.parameters())
     else:
-        optimizer = torch.optim.SGD(model.parameters(), lr=0.01, momentum=0.9,nesterov=True, weight_decay=0.0001)
-        mean_optimizer = torch.optim.SGD(criterion.parameters(), lr=0.01, momentum=0.9, nesterov=True, weight_decay=0.0001)
+        optimizer = torch.optim.SGD(model.parameters(),
+                                    lr=args.lr, momentum=args.mom,nesterov=True, weight_decay=args.weight_decay)
+        mean_optimizer = torch.optim.SGD(criterion.parameters(),
+                                         lr=args.mean_lr, momentum=args.mean_mom, nesterov=True, weight_decay=args.mean_weight_decay)
 
     train_dataset = ProteinDataset('train')
     val_dataset = ProteinDataset('val')
