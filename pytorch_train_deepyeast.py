@@ -164,7 +164,7 @@ def validate(val_loader, model, criterion, _WEIGHT_DECAY = 5e-4, print_freq=1000
             # print("target.shape: {}, logits.shape: {}".format(target.shape, logits.shape))
             # logits = torch.max(logits, 0)
             # print("max logits.shape ", logits.shape)
-            mean_loss = torch.sum(- target * torch.argmax(torch.nn.functional.log_softmax(logits)))
+            mean_loss = torch.sum(- target * torch.argmax(torch.nn.functional.log_softmax(logits, -1), -1), -1)
             mean_loss = torch.mean(mean_loss.float())
             ##################
             # total loss

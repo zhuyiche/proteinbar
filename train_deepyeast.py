@@ -7,7 +7,6 @@ import os
 import argparse
 from keras.callbacks import Callback, EarlyStopping, ModelCheckpoint, ReduceLROnPlateau, TensorBoard
 from guassian_loss import build_gmd_log_likelihood
-from lgm_loss import lgm_loss
 
 parser = argparse.ArgumentParser()
 parser.add_argument("--batchsize", type=int, default=64)
