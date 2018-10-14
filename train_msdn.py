@@ -121,28 +121,7 @@ def validate(val_loader, model, criterion, _WEIGHT_DECAY = 5e-4, print_freq=1000
             output = model(data)
             # print("output.shape: {}".format(output.shape))
             ################## main parts of lgm loss
-            logits, likelihood_regloss, means = criterion(output, target)
-            ################## main parts of lgm loss
-
-            loss = likelihood_regloss
-            ################## l2 regularization loss for loss
-            # l2_criterion = nn.MSELoss(size_average=False)
-            l2_loss = 0
-            for param in model.parameters():
-                l2_loss += torch.norm(param)
-
-            loss += _WEIGHT_DECAY * l2_loss
-            ################## l2 regularization loss
-
-            ################## softmax using logits.
-            # print("target.shape: {}, logits.shape: {}".format(target.shape, logits.shape))
-            # logits = torch.max(logits, 0)
-            # print("max logits.shape ", logits.shape)
-            mean_loss = torch.sum(- target * torch.argmax(torch.nn.functional.log_softmax(logits, -1), -1), -1)
-            mean_loss = torch.mean(mean_loss.float())
-            ##################
-            # total loss
-            loss += mean_loss
+            loss = criterion(output, target)
 
             losses.update(loss.item(), data.size(0))
 
