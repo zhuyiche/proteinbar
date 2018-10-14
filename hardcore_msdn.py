@@ -60,7 +60,7 @@ class MSDNet(nn.Module):
 
         self.depth1_scale3_para = _ParallelTransition(1288)
         self.binary_classifier = _Classifier(2936, 2936, 12)
-        self.binary_softmax = nn.Softmax()
+        self.binary_softmax = nn.LogSoftmax()
     def init_weights(self, m):
         if isinstance(m, nn.Conv2d):
             nn.init.kaiming_normal_(m.weight, mode='fan_out', nonlinearity='relu')
