@@ -23,6 +23,7 @@ parser.add_argument("--mom", type=float, default=0.9)
 parser.add_argument("--mean_weight_decay", type=float, default=0.0001)
 parser.add_argument("--mean_lr", type=float, default=0.01)
 parser.add_argument("--mean_mom", type=float, default=0.9)
+parser.add_argument("--feat_dim", type=int, default=12)
 
 
 args = parser.parse_args()
@@ -201,7 +202,7 @@ def main():
     model = model.cuda()
 
 
-    criterion = LGMLoss(12, 12).cuda()
+    criterion = LGMLoss(12, args.feat_dim).cuda()
     if args.opt == 'adam':
         optimizer = torch.optim.Adam(model.parameters())
         mean_optimizer = torch.optim.Adam(criterion.parameters())
