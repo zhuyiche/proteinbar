@@ -173,7 +173,7 @@ def validate(val_loader, model, criterion, _WEIGHT_DECAY = 5e-4, print_freq=1000
             ################## main parts of lgm loss
             logits, likelihood_regloss, means = criterion(output, target)
             ################## main parts of lgm loss
-            print(means)
+            #print(means)
             ################## l2 regularization loss for loss
             # l2_criterion = nn.MSELoss(size_average=False)
             l2_loss = 0
