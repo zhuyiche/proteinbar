@@ -25,7 +25,6 @@ parser.add_argument("--mean_lr", type=float, default=0.01)
 parser.add_argument("--mean_mom", type=float, default=0.9)
 parser.add_argument("--feat_dim", type=int, default=12)
 
-
 args = parser.parse_args()
 
 
@@ -83,8 +82,9 @@ def train_epoch(data_loader, model, criterion, optimizer, mean_optimizer=None, _
     time_now = time.time()
 
     for batch_idx, (data, target) in enumerate(data_loader):
-        data = data.cuda()
-        target = target.cuda().long()
+        if torch.cuda.is_available():
+            data = data.cuda()
+            target = target.cuda().long()
 
         output = model(data)
         #print("output.shape: {}".format(output.shape))
@@ -144,8 +144,9 @@ def validate(val_loader, model, criterion, _WEIGHT_DECAY = 5e-4, print_freq=1000
     with torch.no_grad():
         time_now = time.time()
         for batch_idx, (data, target) in enumerate(val_loader):
-            data = data.cuda()
-            target = target.cuda().long()
+            if torch.cuda.is_available():
+                data = data.cuda()
+                target = target.cuda().long()
 
             output = model(data)
             # print("output.shape: {}".format(output.shape))
@@ -190,7 +191,8 @@ def validate(val_loader, model, criterion, _WEIGHT_DECAY = 5e-4, print_freq=1000
 
 
 def main():
-    cudnn.benchmark = True
+    if torch.cuda.is_available():
+        cudnn.benchmark = True
     batch_size = args.batchsize
 
     workers = 4
@@ -199,10 +201,13 @@ def main():
 
     model = Net()
     #if Config.gpu is not None:
-    model = model.cuda()
+    if torch.cuda.is_available():
+        model = model.cuda()
 
 
-    criterion = LGMLoss(12, args.feat_dim).cuda()
+    criterion = LGMLoss(12, args.feat_dim)
+    if torch.cuda.is_available():
+        criterion = criterion.cuda()
     if args.opt == 'adam':
         optimizer = torch.optim.Adam(model.parameters())
         mean_optimizer = torch.optim.Adam(criterion.parameters())

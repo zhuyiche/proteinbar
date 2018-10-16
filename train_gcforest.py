@@ -11,12 +11,8 @@ from dataset import load_data
 from utils import preprocess_input
 import os
 import argparse
-
-
-import argparse
 import numpy as np
 import sys
-from keras.datasets import mnist
 import pickle
 from sklearn.ensemble import RandomForestClassifier
 from sklearn.metrics import accuracy_score
@@ -29,7 +25,7 @@ from gcforest.utils.config_utils import load_json
 
 def parse_args():
     parser = argparse.ArgumentParser()
-    parser.add_argument("--model", dest="model", type=str, default=None, help="gcfoest Net Model File")
+    parser.add_argument("--model", dest="model", type=str, default='gcforest_config.json', help="gcfoest Net Model File")
     args = parser.parse_args()
     return args
 
@@ -43,13 +39,13 @@ def get_toy_config():
     ca_config["n_classes"] = 12
     ca_config["estimators"] = []
     ca_config["estimators"].append(
-        {"n_folds": 5, "type": "XGBClassifier", "n_estimators": 10, "max_depth": 5,
+        {"n_folds": 2, "type": "XGBClassifier", "n_estimators": 10, "max_depth": 5,
          "objective": "multi:softprob", "silent": True, "nthread": -1, "learning_rate": 0.1})
     ca_config["estimators"].append(
-        {"n_folds": 5, "type": "RandomForestClassifier", "n_estimators": 10, "max_depth": None, "n_jobs": -1})
+        {"n_folds": 2, "type": "RandomForestClassifier", "n_estimators": 10, "max_depth": None, "n_jobs": -1})
     ca_config["estimators"].append(
-        {"n_folds": 5, "type": "ExtraTreesClassifier", "n_estimators": 10, "max_depth": None, "n_jobs": -1})
-    ca_config["estimators"].append({"n_folds": 5, "type": "LogisticRegression"})
+        {"n_folds": 2, "type": "ExtraTreesClassifier", "n_estimators": 10, "max_depth": None, "n_jobs": -1})
+    ca_config["estimators"].append({"n_folds": 2, "type": "LogisticRegression"})
     config["cascade"] = ca_config
     return config
 
