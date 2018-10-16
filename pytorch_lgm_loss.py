@@ -19,7 +19,6 @@ class LGMLoss(nn.Module):
         XX = torch.sum(feat ** 2, dim=1, keepdim=True)
         YY = torch.sum(torch.transpose(self.means, 0, 1)**2, dim=0, keepdim=True)
         neg_sqr_dist = -0.5 * (XX - 2.0 * XY + YY)
-       # print("neg_sqr_dist.shape: {}".format(neg_sqr_dist.shape))
         """
         if labels is None:
             psudo_labels = torch.argmax(neg_sqr_dist, dim=1)
@@ -37,6 +36,7 @@ class LGMLoss(nn.Module):
             K = ALPHA + torch.ones([batch_size, self.num_classes])
 
         logits_with_margin = torch.mul(neg_sqr_dist, K)
+        #print("logits_with_margin: {}, neg_sqr_dist: {}, K: {}".format(logits_with_margin, neg_sqr_dist, K))
         """
         y_hat_softmax = torch.argmax(torch.nn.functional.softmax(logits_with_margin, 1), 1)
         #print(y_hat_softmax.shape, y_true.shape)
@@ -48,4 +48,5 @@ class LGMLoss(nn.Module):
         #print('logits_with_margin.shape ',logits_with_margin.shape)
         means_batch = torch.index_select(self.means, dim=0, index=labels)
         likelihood_reg_loss = self.lambda_ * (torch.sum((feat - means_batch)**2) / 2) * (1. / batch_size)
+        #print('likelihood_reg_loss: {}'.format(likelihood_reg_loss))
         return logits_with_margin, likelihood_reg_loss, self.means

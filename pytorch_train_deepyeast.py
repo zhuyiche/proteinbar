@@ -28,6 +28,10 @@ parser.add_argument("--feat_dim", type=int, default=12)
 args = parser.parse_args()
 
 
+def one_hot(y):
+    y_onehot = torch.zeros(args.batchsize, 12).scatter_(1, y.view(args.batchsize, 1), 1)
+    print('y_onehot: {}'.format(y_onehot))
+    return y_onehot
 
 def torch_preprocess_input(x):
     x = x.astype(np.float32)
@@ -67,14 +71,7 @@ def accuracy(output, target):
     return percent_acc
 
 
-def tf_softmax_cross_entropy_with_logits_pytorch(logtis, y_true):
-    y_hat_softmax = torch.argmax(torch.nn.functional.softmax(logtis), 1)
-    print(y_hat_softmax.shape,  y_true.shape)
-    total_loss = torch.mean(-torch.sum(y_true * torch.log(y_hat_softmax)), 1)
-    #total_loss = total_loss.cuda().long()
-    return total_loss
-
-def train_epoch(data_loader, model, criterion, optimizer, mean_optimizer=None, _WEIGHT_DECAY = 5e-4, print_freq=1000):
+def train_epoch(data_loader, model, criterion, optimizer, mean_optimizer=None, _WEIGHT_DECAY = 5e-4, print_freq=1):
     losses = AverageMeter()
     percent_acc = AverageMeter()
     means_param = AverageMeter()
@@ -82,10 +79,12 @@ def train_epoch(data_loader, model, criterion, optimizer, mean_optimizer=None, _
     time_now = time.time()
 
     for batch_idx, (data, target) in enumerate(data_loader):
+        target = target.long()
         if torch.cuda.is_available():
             data = data.cuda()
-            target = target.cuda().long()
-
+            target = target.cuda()
+        print('target: {}'.format(target))
+        print('onehot_target: {}'.format(one_hot(target)))
         output = model(data)
         #print("output.shape: {}".format(output.shape))
         ################## main parts of lgm loss
@@ -106,10 +105,23 @@ def train_epoch(data_loader, model, criterion, optimizer, mean_optimizer=None, _
         #print("target.shape: {}, logits.shape: {}".format(target.shape, logits.shape))
         #logits = torch.max(logits, 0)
         #print("max logits.shape ", logits.shape)
-        mean_loss = torch.sum(- target * torch.argmax(torch.nn.functional.log_softmax(logits)))
+
+
+        # below is some code for debug purpose
+        """
+        print('softmax_logits: {}'.format(torch.nn.functional.softmax(logits)))
+        print('log_softmax_logits: {}'.format(torch.log(torch.nn.functional.softmax(logits))))
+        print('torch.nn.functional.log_softmax: {}'.format(torch.nn.functional.log_softmax(logits)))
+        """
+        mean_loss = torch.sum(- one_hot(target) * torch.nn.functional.log_softmax(logits))
         mean_loss = torch.mean(mean_loss.float())
+
         ##################
         #total loss
+        #print('mean: {}'.format(means))
+        #print('Logits: {}, Cross_entorpy_logits: {}'.format(logits, mean_loss))
+        #print('Likelihood Regloss: {}, l2_norm: {}'.format(likelihood_regloss, l2_loss))
+
         loss += mean_loss
         losses.update(loss.item(), data.size(0))
 
@@ -130,8 +142,9 @@ def train_epoch(data_loader, model, criterion, optimizer, mean_optimizer=None, _
         time_end = time.time() - time_now
         if batch_idx % print_freq == 0:
             print('Training Round: {}, Time: {}'.format(batch_idx, np.round(time_end, 2)))
-            print('Likelihood Regloss: {}, l2_norm: {}, reg_loss: {}'.format(likelihood_regloss, _WEIGHT_DECAY * l2_loss,
-                                                                             mean_loss))
+            #print('mean: {}'.format(means))
+            #print('Logits: {}, Cross_entorpy_logits: {}'.format(logits, mean_loss))
+            print('Likelihood Regloss: {}, l2_norm: {}, mean_loss: {}'.format(likelihood_regloss, l2_loss, mean_loss))
             print('Training Loss: val:{} avg:{} Acc: val:{} avg:{}'.format(losses.val, losses.avg,
                                                                   percent_acc.val, percent_acc.avg))
     return losses, percent_acc
@@ -144,9 +157,10 @@ def validate(val_loader, model, criterion, _WEIGHT_DECAY = 5e-4, print_freq=1000
     with torch.no_grad():
         time_now = time.time()
         for batch_idx, (data, target) in enumerate(val_loader):
+            target = target.long()
             if torch.cuda.is_available():
                 data = data.cuda()
-                target = target.cuda().long()
+                target = target.cuda()
 
             output = model(data)
             # print("output.shape: {}".format(output.shape))
@@ -219,7 +233,7 @@ def main():
 
     train_dataset = ProteinDataset('train')
     val_dataset = ProteinDataset('val')
-
+    #print("train_dataset.shape: {}, val_dataset.shape: {}".format(train_dataset.shape, val_dataset.shape))
     train_loader = torch.utils.data.DataLoader(train_dataset,
                               batch_size=batch_size, shuffle=True, pin_memory=True,
                               num_workers=workers)
