@@ -129,7 +129,7 @@ def train_epoch(data_loader, model, criterion, optimizer, mean_optimizer=None, _
         #print('Logits: {}, Cross_entorpy_logits: {}'.format(logits, mean_loss))
         #print('Likelihood Regloss: {}, l2_norm: {}'.format(likelihood_regloss, l2_loss))
 
-        loss = mean_loss + _WEIGHT_DECAY * l2_loss + likelihood_regloss
+        loss = mean_loss + likelihood_regloss
         losses.update(loss.item(), data.size(0))
 
         acc = accuracy(output, target_onehot)
