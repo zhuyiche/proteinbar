@@ -67,9 +67,10 @@ def accuracy(output, target):
     total = 0
     correct = 0
     with torch.no_grad():
-        _, predicted = torch.max(output.data, 1)
+        #_, predicted = torch.max(output.data, 1)
         total += target.size(0)
-        correct += (predicted == target).sum().item()
+        correct += (output.data == target).sum().item()
+        #correct += (predicted == target).sum().item()
     percent_acc = 100 * correct/total
     return percent_acc
 
@@ -131,7 +132,7 @@ def train_epoch(data_loader, model, criterion, optimizer, mean_optimizer=None, _
         loss = mean_loss + _WEIGHT_DECAY * l2_loss + likelihood_regloss
         losses.update(loss.item(), data.size(0))
 
-        acc = accuracy(output, target)
+        acc = accuracy(output, target_onehot)
         percent_acc.update(acc, data.size(0))
 
         # compute gradient and do SGD step
