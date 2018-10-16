@@ -6,7 +6,7 @@ import torch.optim as optim
 import time
 from dataset import load_data
 from torch.utils.data import Dataset
-from resnet import resnet18, resnet34
+from resnet import resnet18, resnet34, resnet50
 import torch.backends.cudnn as cudnn
 from averagemeter import AverageMeter
 from pytorch_lgm_loss import LGMLoss
@@ -15,7 +15,7 @@ parser = argparse.ArgumentParser()
 parser.add_argument("--batchsize", type=int, default=8)
 parser.add_argument("--epoch", type=int, default=400)
 parser.add_argument("--opt", type=str, default='no')
-parser.add_argument("--model", type=str, default='deepyeast')
+parser.add_argument("--model", type=str, default='resnet18')
 parser.add_argument("--mean", type=str, default='false')
 parser.add_argument("--weight_decay", type=float, default=0.0001)
 parser.add_argument("--lr", type=float, default=0.01)
@@ -210,7 +210,12 @@ def main():
     global best_val_acc, best_test_acc
 
 
-    model = resnet18(12)
+    if args.model == 'resnet18':
+        model = resnet18(12)
+    if args.model == 'resnet34':
+        model = resnet34(12)
+    if args.model == 'resnet50':
+        model = resnet50(12)
     #if Config.gpu is not None:
     if torch.cuda.is_available():
         model = model.cuda()
