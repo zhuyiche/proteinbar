@@ -73,7 +73,7 @@ def accuracy(output, target):
     return percent_acc
 
 
-def train_epoch(data_loader, model, criterion, optimizer, mean_optimizer=None, _WEIGHT_DECAY = 5e-4, print_freq=1):
+def train_epoch(data_loader, model, criterion, optimizer, mean_optimizer=None, _WEIGHT_DECAY = 5e-4, print_freq=1000):
     losses = AverageMeter()
     percent_acc = AverageMeter()
     means_param = AverageMeter()
