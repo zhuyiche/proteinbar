@@ -112,12 +112,13 @@ def train_epoch(data_loader, model, criterion, optimizer, mean_optimizer=None, _
         """
         print('softmax_logits: {}'.format(torch.nn.functional.softmax(logits)))
         print('log_softmax_logits: {}'.format(torch.log(torch.nn.functional.softmax(logits))))
-        print('torch.nn.functional.log_softmax: {}'.format(torch.nn.functional.log_softmax(logits)))
         """
+        #print('torch.nn.functional.log_softmax: {}'.format(torch.nn.functional.log_softmax(logits)))
+
         target_onehot = one_hot(target_backup)
         if torch.cuda.is_available():
             target_onehot = target_onehot.cuda()
-        mean_loss = torch.sum(- target_onehot * torch.nn.functional.log_softmax(logits))
+        mean_loss = torch.sum(- target_onehot * torch.nn.functional.log_softmax(logits, -1), -1)
         mean_loss = torch.mean(mean_loss.float())
 
         ##################

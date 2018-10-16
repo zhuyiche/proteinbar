@@ -146,8 +146,8 @@ def main():
     workers = 4
     global best_val_acc, best_test_acc
 
-
-    model = msdn18(12, ss=False, drop_rate=0.5)
+    from pytorch_deepyeast import Net
+    model = Net()
     #if Config.gpu is not None:
     model = model.cuda()
 
