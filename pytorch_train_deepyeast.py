@@ -150,7 +150,7 @@ def train_epoch(data_loader, model, criterion, optimizer, mean_optimizer=None, _
             print('Training Round: {}, Time: {}'.format(batch_idx, np.round(time_end, 2)))
             #print('mean: {}'.format(means))
             #print('Logits: {}, Cross_entorpy_logits: {}'.format(logits, mean_loss))
-            print('Likelihood Regloss: {}, l2_norm: {}, mean_loss: {}'.format(likelihood_regloss, l2_loss, mean_loss))
+            print('Likelihood Regloss: {}, l2_norm: {}, mean_loss: {}'.format(likelihood_regloss, _WEIGHT_DECAY * l2_loss, mean_loss))
     return losses, percent_acc
 
 
@@ -162,6 +162,7 @@ def validate(val_loader, model, criterion, _WEIGHT_DECAY = 5e-4, print_freq=1000
         time_now = time.time()
         for batch_idx, (data, target) in enumerate(val_loader):
             target = target.long()
+            target_backup = target
             if torch.cuda.is_available():
                 data = data.cuda()
                 target = target.cuda()
@@ -172,26 +173,18 @@ def validate(val_loader, model, criterion, _WEIGHT_DECAY = 5e-4, print_freq=1000
             logits, likelihood_regloss, means = criterion(output, target)
             ################## main parts of lgm loss
 
-            loss = likelihood_regloss
             ################## l2 regularization loss for loss
             # l2_criterion = nn.MSELoss(size_average=False)
             l2_loss = 0
             for param in model.parameters():
                 l2_loss += torch.norm(param)
 
-            loss += _WEIGHT_DECAY * l2_loss
-            ################## l2 regularization loss
-
-            ################## softmax using logits.
-            # print("target.shape: {}, logits.shape: {}".format(target.shape, logits.shape))
-            # logits = torch.max(logits, 0)
-            # print("max logits.shape ", logits.shape)
-            mean_loss = torch.sum(- target * torch.argmax(torch.nn.functional.log_softmax(logits, -1), -1), -1)
+            target_onehot = one_hot(target_backup)
+            if torch.cuda.is_available():
+                target_onehot = target_onehot.cuda()
+            mean_loss = torch.sum(- target_onehot * torch.nn.functional.log_softmax(logits, -1), -1)
             mean_loss = torch.mean(mean_loss.float())
-            ##################
-            # total loss
-            loss += mean_loss
-
+            loss = mean_loss + _WEIGHT_DECAY * l2_loss + likelihood_regloss
             losses.update(loss.item(), data.size(0))
 
             acc = accuracy(output, target)
