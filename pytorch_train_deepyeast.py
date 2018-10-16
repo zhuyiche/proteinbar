@@ -31,7 +31,8 @@ args = parser.parse_args()
 def one_hot(y):
     #if torch.cuda.is_available():
      #   y = y.cuda()
-    y_onehot = torch.zeros(args.batchsize, 12).scatter_(1, y.view(args.batchsize, 1), 1)
+
+    y_onehot = torch.zeros(y.size()[0], 12).scatter_(1, y.view(y.size()[0], 1), 1)
     #print('y_onehot: {}'.format(y_onehot))
     return y_onehot
 
