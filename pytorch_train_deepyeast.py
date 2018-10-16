@@ -82,9 +82,10 @@ def train_epoch(data_loader, model, criterion, optimizer, mean_optimizer=None, _
 
     for batch_idx, (data, target) in enumerate(data_loader):
         target = target.long()
+        target_backup = target
         if torch.cuda.is_available():
             data = data.cuda()
-            #target = target.cuda()
+            target = target.cuda()
         #print('target: {}'.format(target))
         #print('onehot_target: {}'.format(one_hot(target)))
         output = model(data)
@@ -115,10 +116,10 @@ def train_epoch(data_loader, model, criterion, optimizer, mean_optimizer=None, _
         print('log_softmax_logits: {}'.format(torch.log(torch.nn.functional.softmax(logits))))
         print('torch.nn.functional.log_softmax: {}'.format(torch.nn.functional.log_softmax(logits)))
         """
-        target_onehot = one_hot(target)
+        target_onehot = one_hot(target_backup)
         if torch.cuda.is_available():
             target_onehot = target_onehot.cuda()
-        mean_loss = torch.sum(- one_hot(target) * torch.nn.functional.log_softmax(logits))
+        mean_loss = torch.sum(- target_onehot * torch.nn.functional.log_softmax(logits))
         mean_loss = torch.mean(mean_loss.float())
 
         ##################
