@@ -151,8 +151,6 @@ def train_epoch(data_loader, model, criterion, optimizer, mean_optimizer=None, _
             #print('mean: {}'.format(means))
             #print('Logits: {}, Cross_entorpy_logits: {}'.format(logits, mean_loss))
             print('Likelihood Regloss: {}, l2_norm: {}, mean_loss: {}'.format(likelihood_regloss, l2_loss, mean_loss))
-            print('Training Loss: val:{} avg:{} Acc: val:{} avg:{}'.format(losses.val, losses.avg,
-                                                                  percent_acc.val, percent_acc.avg))
     return losses, percent_acc
 
 
