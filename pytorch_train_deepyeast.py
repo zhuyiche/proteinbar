@@ -12,7 +12,7 @@ from averagemeter import AverageMeter
 from pytorch_lgm_loss import LGMLoss
 import argparse
 parser = argparse.ArgumentParser()
-parser.add_argument("--batchsize", type=int, default=512)
+parser.add_argument("--batchsize", type=int, default=4)
 parser.add_argument("--epoch", type=int, default=400)
 parser.add_argument("--opt", type=str, default='no')
 parser.add_argument("--model", type=str, default='deepyeast')
@@ -30,7 +30,7 @@ args = parser.parse_args()
 
 def one_hot(y):
     y_onehot = torch.zeros(args.batchsize, 12).scatter_(1, y.view(args.batchsize, 1), 1)
-    print('y_onehot: {}'.format(y_onehot))
+    #print('y_onehot: {}'.format(y_onehot))
     return y_onehot
 
 def torch_preprocess_input(x):
@@ -83,8 +83,8 @@ def train_epoch(data_loader, model, criterion, optimizer, mean_optimizer=None, _
         if torch.cuda.is_available():
             data = data.cuda()
             target = target.cuda()
-        print('target: {}'.format(target))
-        print('onehot_target: {}'.format(one_hot(target)))
+        #print('target: {}'.format(target))
+        #print('onehot_target: {}'.format(one_hot(target)))
         output = model(data)
         #print("output.shape: {}".format(output.shape))
         ################## main parts of lgm loss
