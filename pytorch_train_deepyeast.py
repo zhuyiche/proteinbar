@@ -12,7 +12,7 @@ from averagemeter import AverageMeter
 from pytorch_lgm_loss import LGMLoss
 import argparse
 parser = argparse.ArgumentParser()
-parser.add_argument("--batchsize", type=int, default=4)
+parser.add_argument("--batchsize", type=int, default=8)
 parser.add_argument("--epoch", type=int, default=400)
 parser.add_argument("--opt", type=str, default='no')
 parser.add_argument("--model", type=str, default='deepyeast')
@@ -24,7 +24,7 @@ parser.add_argument("--mean_weight_decay", type=float, default=0.0001)
 parser.add_argument("--mean_lr", type=float, default=0.01)
 parser.add_argument("--mean_mom", type=float, default=0.9)
 parser.add_argument("--feat_dim", type=int, default=12)
-
+parser.add_argument("--print_freq", type=int, default=1)
 args = parser.parse_args()
 
 
@@ -73,7 +73,7 @@ def accuracy(output, target):
     return percent_acc
 
 
-def train_epoch(data_loader, model, criterion, optimizer, mean_optimizer=None, _WEIGHT_DECAY = 5e-4, print_freq=1000):
+def train_epoch(data_loader, model, criterion, optimizer, mean_optimizer=None, _WEIGHT_DECAY = 5e-4, print_freq=args.print_freq):
     losses = AverageMeter()
     percent_acc = AverageMeter()
     means_param = AverageMeter()
@@ -94,14 +94,12 @@ def train_epoch(data_loader, model, criterion, optimizer, mean_optimizer=None, _
         logits, likelihood_regloss, means = criterion(output, target)
         ################## main parts of lgm loss
 
-        loss = likelihood_regloss
         ################## l2 regularization loss for loss
         #l2_criterion = nn.MSELoss(size_average=False)
         l2_loss = 0
         for param in model.parameters():
             l2_loss += torch.norm(param)
 
-        loss += _WEIGHT_DECAY * l2_loss
         ################## l2 regularization loss
 
         ################## softmax using logits.
@@ -128,7 +126,7 @@ def train_epoch(data_loader, model, criterion, optimizer, mean_optimizer=None, _
         #print('Logits: {}, Cross_entorpy_logits: {}'.format(logits, mean_loss))
         #print('Likelihood Regloss: {}, l2_norm: {}'.format(likelihood_regloss, l2_loss))
 
-        loss += mean_loss
+        loss = mean_loss + _WEIGHT_DECAY * l2_loss + likelihood_regloss
         losses.update(loss.item(), data.size(0))
 
         acc = accuracy(output, target)
