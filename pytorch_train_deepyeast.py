@@ -170,8 +170,8 @@ def train_epoch(data_loader, model, criterion, optimizer, mean_optimizer=None, _
             if args.loss == 'ce':
                 print('Loss: {}, acc: {}'.format(loss, acc))
 
-        if args.loss == 'lgm':
-            print("last batch mean: {}".format(means))
+    if args.loss == 'lgm':
+        print("last batch mean: {}".format(means))
     return losses, percent_acc
 
 
