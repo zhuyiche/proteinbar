@@ -19,8 +19,6 @@ class LSoftmaxLinear(nn.Module):
 
         # Initialize L-Softmax parameters
         self.weight = nn.Parameter(torch.FloatTensor(input_features, output_features))
-        if torch.cuda.is_available():
-            self.weight = self.weight.cuda()
         self.divisor = math.pi / self.margin  # pi/m
         self.C_m_2n = torch.Tensor(binom(margin, range(0, margin + 1, 2)))  # C_m{2n}
         self.cos_powers = torch.Tensor(range(self.margin, -1, -2))  # m - 2n
