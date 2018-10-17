@@ -6,7 +6,7 @@ import torch.optim as optim
 import time
 from dataset import load_data
 from torch.utils.data import Dataset
-from pytorch_deepyeast import Net
+from pytorch_deepyeast import Deepyeast
 import torch.backends.cudnn as cudnn
 from averagemeter import AverageMeter
 from pytorch_lgm_loss import LGMLoss
@@ -25,6 +25,9 @@ parser.add_argument("--mean_lr", type=float, default=0.01)
 parser.add_argument("--mean_mom", type=float, default=0.9)
 parser.add_argument("--feat_dim", type=int, default=12)
 parser.add_argument("--print_freq", type=int, default=1)
+parser.add_argument("--lsoftmax", type=str, default='false')
+parser.add_argument('--margin', type=int, default=4, metavar='M',
+                        help='the margin for the l-softmax formula (m=1, 2, 3, 4)')
 args = parser.parse_args()
 
 
@@ -210,7 +213,7 @@ def main():
     global best_val_acc, best_test_acc
 
 
-    model = Net()
+    model = Deepyeast(lsoftmax=args.lsoftmax, margin=args.margin)
     #if Config.gpu is not None:
     if torch.cuda.is_available():
         model = model.cuda()

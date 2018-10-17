@@ -2,10 +2,11 @@ import torch
 import torchvision
 import numpy as np
 import torch.nn as nn
+from lsoftmax import LSoftmaxLinear
 
-class Net(nn.Module):
-    def __init__(self):
-        super(Net, self).__init__()
+class Deepyeast(nn.Module):
+    def __init__(self, lsoftmax=None, margin=None):
+        super(Deepyeast, self).__init__()
         self.block1conv1 = nn.Sequential(
             nn.Conv2d(2, 64, 3, padding=1),
             nn.BatchNorm2d(64),
@@ -70,6 +71,9 @@ class Net(nn.Module):
         self.fc3 = nn.Linear(512, 12)
         self.dropout2 = nn.Dropout()
         self.out = nn.LogSoftmax(dim=1)
+        self.lsoftmax_linear = LSoftmaxLinear(
+            input_features=512, output_features=12, margin=margin)
+        self.iflsoftmax = lsoftmax
 
     def forward(self, x):
         x = self.block1conv1(x)
@@ -86,6 +90,9 @@ class Net(nn.Module):
         x = x.view(x.size(0), -1)
         x = self.fc1(x)
         x = self.fc2(x)
-        x = self.fc3(x)
-        out = self.out(x)
+        if self.iflsoftmax == 'true':
+            out = self.lsoftmax_linear(x)
+        else:
+            x = self.fc3(x)
+            out = self.out(x)
         return out
