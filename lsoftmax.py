@@ -25,7 +25,6 @@ class LSoftmaxLinear(nn.Module):
         self.sin2_powers = torch.Tensor(range(len(self.cos_powers)))  # n
         self.signs = torch.ones(margin // 2 + 1)  # 1, -1, 1, -1, ...
         if torch.cuda.is_available():
-            self.divisor = self.divisor.cuda()
             self.C_m_2n = self.C_m_2n.cuda()
             self.cos_powers = self.cos_powers.cuda()
             self.sin2_powers = self.sin2_powers.cuda()
