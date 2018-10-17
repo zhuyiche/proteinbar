@@ -103,10 +103,11 @@ def train_epoch(data_loader, model, criterion, optimizer, mean_optimizer=None, _
 
             ################## l2 regularization loss for loss
             # l2_criterion = nn.MSELoss(size_average=False)
+            """
             l2_loss = 0
             for param in model.parameters():
                 l2_loss += torch.norm(param)
-
+            """
             ################## l2 regularization loss
 
             ################## softmax using logits.
@@ -120,20 +121,20 @@ def train_epoch(data_loader, model, criterion, optimizer, mean_optimizer=None, _
             print('log_softmax_logits: {}'.format(torch.log(torch.nn.functional.softmax(logits))))
             """
             # print('torch.nn.functional.log_softmax: {}'.format(torch.nn.functional.log_softmax(logits)))
-
+            """
             target_onehot = one_hot(target_backup)
             if torch.cuda.is_available():
                 target_onehot = target_onehot.cuda()
             mean_loss = torch.sum(- target_onehot * torch.nn.functional.log_softmax(logits, -1), -1)
             mean_loss = torch.mean(mean_loss.float())
-
+            """
             ##################
             # total loss
             # print('mean: {}'.format(means))
             # print('Logits: {}, Cross_entorpy_logits: {}'.format(logits, mean_loss))
             # print('Likelihood Regloss: {}, l2_norm: {}'.format(likelihood_regloss, l2_loss))
 
-            loss = mean_loss + likelihood_regloss#+ _WEIGHT_DECAY * l2_loss + likelihood_regloss
+            loss = logits# + likelihood_regloss#+ _WEIGHT_DECAY * l2_loss + likelihood_regloss
 
         if args.loss == 'ce':
             loss = criterion(output, target)
@@ -164,14 +165,13 @@ def train_epoch(data_loader, model, criterion, optimizer, mean_optimizer=None, _
             #print('mean: {}'.format(means))
             #print('Logits: {}, Cross_entorpy_logits: {}'.format(logits, mean_loss))
             if args.loss == 'lgm':
-                print('Likelihood Regloss: {}, l2_norm: {}, mean_loss: {}'.format(likelihood_regloss,
-                                                                                  _WEIGHT_DECAY * l2_loss,
-                                                                                  mean_loss))
+                print('logit: {}'.format(logits))
+                #print('Likelihood Regloss: {}, l2_norm: {}, mean_loss: {}'.format(likelihood_regloss, _WEIGHT_DECAY * l2_loss, mean_loss))
             if args.loss == 'ce':
                 print('Loss: {}, acc: {}'.format(loss, acc))
 
-    if args.loss == 'lgm':
-        print("last batch mean: {}".format(means))
+    #if args.loss == 'lgm':
+    #    print("last batch mean: {}".format(means))
     return losses, percent_acc
 
 
@@ -197,6 +197,7 @@ def validate(val_loader, model, criterion, _WEIGHT_DECAY = 5e-4, print_freq=1000
 
                 ################## l2 regularization loss for loss
                 # l2_criterion = nn.MSELoss(size_average=False)
+                """
                 l2_loss = 0
                 for param in model.parameters():
                     l2_loss += torch.norm(param)
@@ -206,7 +207,8 @@ def validate(val_loader, model, criterion, _WEIGHT_DECAY = 5e-4, print_freq=1000
                     target_onehot = target_onehot.cuda()
                 mean_loss = torch.sum(- target_onehot * torch.nn.functional.log_softmax(logits, -1), -1)
                 mean_loss = torch.mean(mean_loss.float())
-                loss = mean_loss + _WEIGHT_DECAY * l2_loss + likelihood_regloss
+                """
+                loss = logits #+ _WEIGHT_DECAY * l2_loss + likelihood_regloss
             if args.loss == 'ce':
                 loss = criterion(output, target)
 
