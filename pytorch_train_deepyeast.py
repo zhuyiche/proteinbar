@@ -93,7 +93,7 @@ def train_epoch(data_loader, model, criterion, optimizer, mean_optimizer=None, _
             target = target.cuda()
         #print('target: {}'.format(target))
         #print('onehot_target: {}'.format(one_hot(target)))
-        output = model(data)
+        output = model(data, target)
         #print("output.shape: {}".format(output.shape))
         ################## main parts of lgm loss
         logits, likelihood_regloss, means = criterion(output, target)

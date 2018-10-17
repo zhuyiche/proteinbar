@@ -75,7 +75,7 @@ class Deepyeast(nn.Module):
             input_features=512, output_features=12, margin=margin)
         self.iflsoftmax = lsoftmax
 
-    def forward(self, x):
+    def forward(self, x, target=None):
         x = self.block1conv1(x)
         x = self.block1conv2(x)
         x = self.maxpool1(x)
@@ -91,7 +91,7 @@ class Deepyeast(nn.Module):
         x = self.fc1(x)
         x = self.fc2(x)
         if self.iflsoftmax == 'true':
-            out = self.lsoftmax_linear(x)
+            out = self.lsoftmax_linear(x, target=target)
         else:
             x = self.fc3(x)
             out = self.out(x)
