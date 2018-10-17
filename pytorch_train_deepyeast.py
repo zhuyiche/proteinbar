@@ -88,12 +88,13 @@ def train_epoch(data_loader, model, criterion, optimizer, mean_optimizer=None, _
     for batch_idx, (data, target) in enumerate(data_loader):
         target = target.long()
         target_backup = target
+        data_backup = data
         if torch.cuda.is_available():
             data = data.cuda()
             target = target.cuda()
         #print('target: {}'.format(target))
         #print('onehot_target: {}'.format(one_hot(target)))
-        output = model(data, target)
+        output = model(data_backup, target_backup)
         #print("output.shape: {}".format(output.shape))
         ################## main parts of lgm loss
         logits, likelihood_regloss, means = criterion(output, target)
