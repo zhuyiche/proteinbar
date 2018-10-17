@@ -17,6 +17,7 @@ class LGMLoss(nn.Module):
 
     def _classification_probability(self, x, y, mean, var):
         batch_size = x.size()[0]
+        print('x.shape: {}, y.shape: {}'.format(x.shape, y.shape))
         print('classification_probability')
         print('mean.shape: {}, var.shape: {}'.format(mean.shape, var.shape))
         reshape_var = var.view(-1, 1, self._feature_dim)
