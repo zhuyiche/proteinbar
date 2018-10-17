@@ -19,11 +19,19 @@ class LSoftmaxLinear(nn.Module):
 
         # Initialize L-Softmax parameters
         self.weight = nn.Parameter(torch.FloatTensor(input_features, output_features))
+        if torch.cuda.is_available():
+            self.weight = self.weight.cuda()
         self.divisor = math.pi / self.margin  # pi/m
         self.C_m_2n = torch.Tensor(binom(margin, range(0, margin + 1, 2)))  # C_m{2n}
         self.cos_powers = torch.Tensor(range(self.margin, -1, -2))  # m - 2n
         self.sin2_powers = torch.Tensor(range(len(self.cos_powers)))  # n
         self.signs = torch.ones(margin // 2 + 1)  # 1, -1, 1, -1, ...
+        if torch.cuda.is_available():
+            self.divisor = self.divisor.cuda()
+            self.C_m_2n = self.C_m_2n.cuda()
+            self.cos_powers = self.cos_powers.cuda()
+            self.sin2_powers = self.sin2_powers.cuda()
+            self.signs = self.signs.cuda()
         self.signs[1::2] = -1
 
     def calculate_cos_m_theta(self, cos_theta):
