@@ -12,7 +12,7 @@ from averagemeter import AverageMeter
 from pytorch_lgm_loss import LGMLoss
 import argparse
 parser = argparse.ArgumentParser()
-parser.add_argument("--batchsize", type=int, default=8)
+parser.add_argument("--batchsize", type=int, default=16)
 parser.add_argument("--epoch", type=int, default=400)
 parser.add_argument("--opt", type=str, default='no')
 parser.add_argument("--model", type=str, default='deepyeast')
@@ -20,15 +20,15 @@ parser.add_argument("--mean", type=str, default='false')
 parser.add_argument("--weight_decay", type=float, default=0.0001)
 parser.add_argument("--lr", type=float, default=0.01)
 parser.add_argument("--mom", type=float, default=0.9)
-parser.add_argument("--mean_weight_decay", type=float, default=0.0001)
-parser.add_argument("--mean_lr", type=float, default=0.01)
-parser.add_argument("--mean_mom", type=float, default=0.9)
+parser.add_argument("--mean_weight_decay", type=float, default=0.00001)
+parser.add_argument("--mean_lr", type=float, default=0.001)
+parser.add_argument("--mean_mom", type=float, default=0.09)
 parser.add_argument("--feat_dim", type=int, default=12)
-parser.add_argument("--print_freq", type=int, default=1)
-parser.add_argument("--lsoftmax", type=str, default='false')
+parser.add_argument("--print_freq", type=int, default=1000)
+parser.add_argument("--lsoftmax", type=str, default='true')
 parser.add_argument('--margin', type=int, default=4, metavar='M',
                         help='the margin for the l-softmax formula (m=1, 2, 3, 4)')
-parser.add_argument("--loss", type=str, default='lgm')
+parser.add_argument("--loss", type=str, default='ce')
 args = parser.parse_args()
 
 
@@ -153,9 +153,12 @@ def train_epoch(data_loader, model, criterion, optimizer, mean_optimizer=None, _
         optimizer.zero_grad()
         loss.backward()
         optimizer.step()
+
         if args.mean == 'true':
             mean_optimizer.step()
+
         time_end = time.time() - time_now
+
         if batch_idx % print_freq == 0:
             print('Training Round: {}, Time: {}'.format(batch_idx, np.round(time_end, 2)))
             #print('mean: {}'.format(means))
@@ -165,7 +168,10 @@ def train_epoch(data_loader, model, criterion, optimizer, mean_optimizer=None, _
                                                                                   _WEIGHT_DECAY * l2_loss,
                                                                                   mean_loss))
             if args.loss == 'ce':
-                print('Loss: {}'.format(loss))
+                print('Loss: {}, acc: {}'.format(loss, acc))
+
+        if args.loss == 'lgm':
+            print("last batch mean: {}".format(means))
     return losses, percent_acc
 
 
@@ -203,6 +209,7 @@ def validate(val_loader, model, criterion, _WEIGHT_DECAY = 5e-4, print_freq=1000
                 loss = mean_loss + _WEIGHT_DECAY * l2_loss + likelihood_regloss
             if args.loss == 'ce':
                 loss = criterion(output, target)
+
             losses.update(loss.item(), data.size(0))
 
             acc = accuracy(output, target)
@@ -215,6 +222,7 @@ def validate(val_loader, model, criterion, _WEIGHT_DECAY = 5e-4, print_freq=1000
                 print('Validation Loss: val:{} avg:{} Acc: val:{} avg:{}'.format(losses.val, losses.avg,
                                                                       percent_acc.val, percent_acc.avg))
                                                                       """
+
     return losses, percent_acc
 
 
@@ -242,17 +250,21 @@ def main():
             mean_optimizer = torch.optim.Adam(criterion.parameters())
         else:
             optimizer = torch.optim.SGD(model.parameters(),
-                                        lr=args.lr, momentum=args.mom, nesterov=True, weight_decay=args.weight_decay)
+                                        lr=args.lr, momentum=args.mom,
+                                        nesterov=True,
+                                        weight_decay=args.weight_decay)
             mean_optimizer = torch.optim.SGD(criterion.parameters(),
-                                             lr=args.mean_lr, momentum=args.mean_mom, nesterov=True,
+                                             lr=args.mean_lr, momentum=args.mean_mom,
                                              weight_decay=args.mean_weight_decay)
     if args.loss == 'ce':
         criterion = torch.nn.CrossEntropyLoss()
+        optimizer = torch.optim.SGD(model.parameters(),
+                                    lr=args.lr,
+                                    momentum=args.mom, nesterov=True,
+                                    weight_decay=args.weight_decay)
         if torch.cuda.is_available():
             criterion = criterion.cuda()
-            optimizer = torch.optim.SGD(model.parameters(),
-                                        lr=args.lr, momentum=args.mom,nesterov=True, weight_decay=args.weight_decay)
-            mean_optimizer = None
+        mean_optimizer = None
 
     train_dataset = ProteinDataset('train')
     val_dataset = ProteinDataset('val')
