@@ -28,6 +28,7 @@ parser.add_argument("--print_freq", type=int, default=1)
 parser.add_argument("--lsoftmax", type=str, default='false')
 parser.add_argument('--margin', type=int, default=4, metavar='M',
                         help='the margin for the l-softmax formula (m=1, 2, 3, 4)')
+parser.add_argument("--loss", type=str, default='lgm')
 args = parser.parse_args()
 
 
@@ -218,18 +219,26 @@ def main():
     if torch.cuda.is_available():
         model = model.cuda()
 
-
-    criterion = LGMLoss(12, args.feat_dim)
-    if torch.cuda.is_available():
-        criterion = criterion.cuda()
-    if args.opt == 'adam':
-        optimizer = torch.optim.Adam(model.parameters())
-        mean_optimizer = torch.optim.Adam(criterion.parameters())
-    else:
-        optimizer = torch.optim.SGD(model.parameters(),
-                                    lr=args.lr, momentum=args.mom,nesterov=True, weight_decay=args.weight_decay)
-        mean_optimizer = torch.optim.SGD(criterion.parameters(),
-                                         lr=args.mean_lr, momentum=args.mean_mom, nesterov=True, weight_decay=args.mean_weight_decay)
+    if args.loss == 'lgm':
+        criterion = LGMLoss(12, args.feat_dim)
+        if torch.cuda.is_available():
+            criterion = criterion.cuda()
+        if args.opt == 'adam':
+            optimizer = torch.optim.Adam(model.parameters())
+            mean_optimizer = torch.optim.Adam(criterion.parameters())
+        else:
+            optimizer = torch.optim.SGD(model.parameters(),
+                                        lr=args.lr, momentum=args.mom, nesterov=True, weight_decay=args.weight_decay)
+            mean_optimizer = torch.optim.SGD(criterion.parameters(),
+                                             lr=args.mean_lr, momentum=args.mean_mom, nesterov=True,
+                                             weight_decay=args.mean_weight_decay)
+    if args.loss == 'ce':
+        criterion = torch.nn.CrossEntropyLoss()
+        if torch.cuda.is_available():
+            criterion = criterion.cuda()
+            optimizer = torch.optim.SGD(model.parameters(),
+                                        lr=args.lr, momentum=args.mom,nesterov=True, weight_decay=args.weight_decay)
+            mean_optimizer = None
 
     train_dataset = ProteinDataset('train')
     val_dataset = ProteinDataset('val')

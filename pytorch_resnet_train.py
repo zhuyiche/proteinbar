@@ -9,7 +9,7 @@ from torch.utils.data import Dataset
 from resnet import resnet18, resnet34, resnet50
 import torch.backends.cudnn as cudnn
 from averagemeter import AverageMeter
-from pytorch_lgm_loss import LGMLoss
+from pytorch_lgm_loss import LGMLoss, Mean_LGMLoss
 import argparse
 parser = argparse.ArgumentParser()
 parser.add_argument("--batchsize", type=int, default=8)
@@ -25,6 +25,7 @@ parser.add_argument("--mean_lr", type=float, default=0.01)
 parser.add_argument("--mean_mom", type=float, default=0.9)
 parser.add_argument("--feat_dim", type=int, default=12)
 parser.add_argument("--print_freq", type=int, default=1)
+parser.add_argument("--lsoftmax", type=str, default='false')
 args = parser.parse_args()
 
 
@@ -223,6 +224,7 @@ def main():
 
 
     criterion = LGMLoss(12, args.feat_dim)
+    mean_criterion = Mean_LGMLoss(12, args.feat_dim)
     if torch.cuda.is_available():
         criterion = criterion.cuda()
     if args.opt == 'adam':
@@ -231,7 +233,7 @@ def main():
     else:
         optimizer = torch.optim.SGD(model.parameters(),
                                     lr=args.lr, momentum=args.mom,nesterov=True, weight_decay=args.weight_decay)
-        mean_optimizer = torch.optim.SGD(criterion.parameters(),
+        mean_optimizer = torch.optim.SGD(mean_criterion.parameters(),
                                          lr=args.mean_lr, momentum=args.mean_mom, nesterov=True, weight_decay=args.mean_weight_decay)
 
     train_dataset = ProteinDataset('train')
