@@ -17,28 +17,52 @@ class LGMLoss(nn.Module):
 
     def _classification_probability(self, x, y, mean, var):
         batch_size = x.size()[0]
+        print()
         print('x.shape: {}, y.shape: {}'.format(x.shape, y.shape))
+        print()
         print('classification_probability')
         print('mean.shape: {}, var.shape: {}'.format(mean.shape, var.shape))
+
+
         reshape_var = var.view(-1, 1, self._feature_dim)
         reshape_mean = mean.view(-1, 1, self._feature_dim)
+        print()
         print('reshape_mean.shape: {}, reshape_var.shape: {}'.format(
             reshape_mean.shape, reshape_var.shape))
+
+
         expand_data = x.unsqueeze_(0)
+        print()
         print('expand_data.shape: {}'.format(expand_data.shape))
+        #this is extra
+        expand_data = torch.transpose(expand_data, 0,1)
+        print()
+        print('expand_data_transpose.shape: {}'.format(expand_data.shape))
+
         data_min_mean = expand_data - reshape_mean
+        print()
         print('data_min_mean.shape: {}'.format(data_min_mean.shape))
+
+
         transpose_data_min_mean = torch.transpose(data_min_mean, 0, 1)
         pair_m_distance = torch.bmm(data_min_mean/(reshape_var+1e-8),
                                     transpose_data_min_mean)/2
+        print()
         print('pair_m_distance.shape: {}'.format(pair_m_distance.shape))
+
+
         index = torch.from_numpy(np.array([i for i in range(batch_size)]))
+        print()
         print('index.shape: {}'.format(index))
         m_distance = torch.transpose(pair_m_distance[:, index, index], 0, 1)
+        print()
         print('m_distance.shape: {}'.format(m_distance.shape))
         det = torch.dot(var, 1)
+        print()
         print('det.shape: {}'.format(det.shape))
+        print()
         label_onehot = torch.index_select(self.means, dim=0, index=y)
+        print()
         print('label_onehot.shape: {}'.format(label_onehot.shape))
         adjust_m_distance = m_distance + label_onehot * self.alpha * m_distance
         print('adjust_m_distance.shape: {}'.format(adjust_m_distance.shape))
